@@ -1,9 +1,4 @@
-"""
-Post-Redaction Leakage Scanner
-================================
-Scans the OUTPUT DOCX for remaining original PII that should have been redacted.
-Returns a report of any detected leakage.
-"""
+"""Leakage scanner for verifying redacted output files."""
 
 from __future__ import annotations
 from pathlib import Path

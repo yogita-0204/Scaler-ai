@@ -95,11 +95,15 @@ python3 -m pii_redactor \
 │   ├── evaluator.py            # Gold-set precision/recall evaluator
 │   ├── leakage_scanner.py      # Post-redaction leakage checker
 │   └── pseudonymiser.py        # Deterministic fake data generator
-├── tests/                      # Unit and integration tests
-├── evaluation_report.md        # Pipeline output & evaluation results
+├── tests/
+│   └── test_pii_redactor.py    # Unit and integration test suite
+├── Enterprise Data - Assignment.docx
+├── Red Herring Prospectus.docx  # Input prospectus document
+├── redacted_prospectus.docx     # Output redacted DOCX
+├── evaluation_report.md         # Generated evaluation report
 ├── README.md
 ├── requirements.txt
-└── LICENSE                     # MIT License
+└── LICENSE                      # MIT License
 ```
 
 ---

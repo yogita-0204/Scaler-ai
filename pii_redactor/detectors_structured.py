@@ -47,17 +47,11 @@ class EmailDetector(PIIDetector):
                                 CONFIDENCE_HIGH, self.name)
 
 
-# ---------------------------------------------------------------------------
+
 # Phone Detector – Indian numbers (+91 prefix or 10-digit mobile)
-# ---------------------------------------------------------------------------
+
 class PhoneDetector(PIIDetector):
-    """
-    Detects Indian phone numbers:
-    - +91 XX XXXX XXXX  (with optional spaces/hyphens)
-    - +91 XXXXXXXXXX
-    - 10-digit standalone numbers starting with 6-9
-    Also handles numbers spread across runs (spaces inserted by DOCX).
-    """
+    """Detects Indian phone numbers."""
     name = "PhoneDetector"
 
     _PATTERN = re.compile(
@@ -78,9 +72,9 @@ class PhoneDetector(PIIDetector):
                                 CONFIDENCE_HIGH, self.name)
 
 
-# ---------------------------------------------------------------------------
+
 # IP Address Detector
-# ---------------------------------------------------------------------------
+
 class IPAddressDetector(PIIDetector):
     """IPv4 addresses with octet validation."""
     name = "IPAddressDetector"
@@ -100,9 +94,9 @@ class IPAddressDetector(PIIDetector):
                                 validator=self._valid_ip)
 
 
-# ---------------------------------------------------------------------------
+
 # Credit Card Detector
-# ---------------------------------------------------------------------------
+
 class CreditCardDetector(PIIDetector):
     """Luhn-validated 13-19 digit card numbers with optional separators."""
     name = "CreditCardDetector"
@@ -131,9 +125,9 @@ class CreditCardDetector(PIIDetector):
                                 validator=self._luhn)
 
 
-# ---------------------------------------------------------------------------
+
 # SSN Detector (US: XXX-XX-XXXX)
-# ---------------------------------------------------------------------------
+
 class SSNDetector(PIIDetector):
     """US Social Security Numbers – strict format."""
     name = "SSNDetector"
@@ -147,14 +141,11 @@ class SSNDetector(PIIDetector):
                                 CONFIDENCE_HIGH, self.name)
 
 
-# ---------------------------------------------------------------------------
+
 # CIN Detector (Indian Corporate Identity Number)
-# ---------------------------------------------------------------------------
+
 class CINDetector(PIIDetector):
-    """
-    CIN format: L/U + 5 digits + 2 alpha + 4 digits + PLC/LLC/OPC/NPL/PTC + 6 digits
-    Example: U28129PN1979PLC141032
-    """
+    """Detects Indian Corporate Identity Numbers (CIN)."""
     name = "CINDetector"
 
     _PATTERN = re.compile(
@@ -166,9 +157,9 @@ class CINDetector(PIIDetector):
                                 CONFIDENCE_HIGH, self.name)
 
 
-# ---------------------------------------------------------------------------
+
 # PAN Detector (Indian Permanent Account Number)
-# ---------------------------------------------------------------------------
+
 class PANDetector(PIIDetector):
     """PAN: 5 uppercase alpha + 4 digits + 1 uppercase alpha."""
     name = "PANDetector"
@@ -201,9 +192,9 @@ class PANDetector(PIIDetector):
         return results
 
 
-# ---------------------------------------------------------------------------
+
 # DIN Detector (Director Identification Number – 8 digits)
-# ---------------------------------------------------------------------------
+
 class DINDetector(PIIDetector):
     """DIN appears near 'DIN' label, 8 consecutive digits."""
     name = "DINDetector"
@@ -230,14 +221,11 @@ class DINDetector(PIIDetector):
         return results
 
 
-# ---------------------------------------------------------------------------
+
 # Pincode Detector (Indian 6-digit postal code)
-# ---------------------------------------------------------------------------
+
 class PincodeDetector(PIIDetector):
-    """
-    Indian pincodes: 6-digit numbers starting with 1-9
-    detected when near location keywords.
-    """
+    """Detects 6-digit Indian postal codes."""
     name = "PincodeDetector"
 
     _PATTERN = re.compile(r"\b([1-9]\d{5})\b")
@@ -269,9 +257,9 @@ class PincodeDetector(PIIDetector):
         return results
 
 
-# ---------------------------------------------------------------------------
+
 # Expose all structured detectors in one list
-# ---------------------------------------------------------------------------
+
 ALL_STRUCTURED_DETECTORS: list[PIIDetector] = [
     EmailDetector(),
     PhoneDetector(),

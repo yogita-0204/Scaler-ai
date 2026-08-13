@@ -1,9 +1,4 @@
-"""
-PII Redaction Tool – Detector Base
-====================================
-All detectors implement the PIIDetector interface.
-Each returns a list of Detection objects.
-"""
+"""Base detection types and overlap resolution."""
 
 from __future__ import annotations
 import re

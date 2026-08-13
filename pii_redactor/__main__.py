@@ -1,12 +1,4 @@
-"""
-PII Redaction Tool – Main Entry Point
-=======================================
-Usage:
-    python -m pii_redactor                          # full pipeline
-    python -m pii_redactor --evaluate-only          # only run gold-set evaluation
-    python -m pii_redactor --scan-only              # only run leakage scan
-    python -m pii_redactor --input X.docx --output Y.docx
-"""
+"""CLI runner for PII redaction."""
 
 from __future__ import annotations
 import argparse
@@ -37,18 +29,16 @@ def main(argv: list[str] | None = None):
         Path(args.output).parent / "evaluation_report.md"
     )
 
-    # --- Evaluate only ---
     if args.evaluate_only:
         print("Running gold-set evaluation...")
         metrics = run_evaluation()
         report = format_report(metrics)
         print(report)
         with open(report_path, "w") as f:
-            f.write("# Evaluation Report\n\n```\n" + report + "\n```\n")
+            f.write("# Evaluation Report\n\n" + report + "\n")
         print(f"\nReport written to: {report_path}")
         return 0
 
-    # --- Scan only ---
     if args.scan_only:
         print(f"Scanning {args.output} for remaining PII...")
         if not Path(args.input).exists():
@@ -63,10 +53,7 @@ def main(argv: list[str] | None = None):
         print(f"Clean: {result.get('clean', False)}")
         return 0 if result.get("clean", False) else 1
 
-    # --- Full pipeline ---
-    print("=" * 60)
-    print("PII REDACTION TOOL")
-    print("=" * 60)
+    print("PII Redaction Tool")
     print(f"Input:  {args.input}")
     print(f"Output: {args.output}")
     print()
@@ -100,7 +87,7 @@ def main(argv: list[str] | None = None):
     print(f"      Clean: {clean_flag}")
 
     if not clean_flag:
-        print("\n      === LEAKED VALUES (sample) ===")
+        print("\n      Leaked values (sample):")
         for leak in literal_leaks[:10]:
             print(f"      [{leak['category']}] {leak['value'][:60]}")
 

@@ -194,17 +194,10 @@ class PersonNameDetector(PIIDetector):
         return results
 
 
-# ============================================================================
-# COMPANY NAME DETECTOR
-# ============================================================================
+
 
 class CompanyNameDetector(PIIDetector):
-    """
-    Detects company/legal-entity names via:
-    1. Known-entity list
-    2. Company suffix patterns (Limited, LLP, Pvt. Ltd., etc.)
-    3. Trust/Family-trust patterns
-    """
+    """Detects company and legal entity names."""
     name = "CompanyNameDetector"
 
     # Suffix pattern: 1-5 capitalized words (no conjunctions) followed by company suffix
@@ -282,17 +275,10 @@ class CompanyNameDetector(PIIDetector):
         return results
 
 
-# ============================================================================
-# ADDRESS DETECTOR
-# ============================================================================
+
 
 class AddressDetector(PIIDetector):
-    """
-    Detects physical/mailing addresses.
-    Focuses on the DOCX prospectus patterns:
-    - Building/plot numbers followed by location names
-    - Contains state/city/country context
-    """
+    """Detects physical and mailing addresses."""
     name = "AddressDetector"
 
     # Starts with a building/plot number
@@ -351,15 +337,10 @@ class AddressDetector(PIIDetector):
         return results
 
 
-# ============================================================================
-# DATE OF BIRTH DETECTOR
-# ============================================================================
+
 
 class DOBDetector(PIIDetector):
-    """
-    Detects dates that appear in a DOB/birth context.
-    Avoids flagging all dates – only those near DOB keywords.
-    """
+    """Detects dates of birth near DOB keywords."""
     name = "DOBDetector"
 
     _DATE_PATTERN = re.compile(
@@ -407,9 +388,7 @@ class DOBDetector(PIIDetector):
         return results
 
 
-# ============================================================================
-# All contextual detectors
-# ============================================================================
+
 ALL_CONTEXTUAL_DETECTORS: list[PIIDetector] = [
     PersonNameDetector(),
     CompanyNameDetector(),

@@ -1,9 +1,4 @@
-"""DOCX-wide PII detection and redaction.
-
-The processor edits WordprocessingML text nodes directly. This keeps run
-properties, hyperlinks, tables, headers, footers, and other XML structure
-intact instead of rebuilding paragraphs through python-docx runs.
-"""
+"""DOCX PII detection and redaction."""
 
 from __future__ import annotations
 

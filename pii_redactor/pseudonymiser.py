@@ -1,9 +1,4 @@
-"""
-Pseudonymisation Engine
-========================
-Deterministic fake-value generation.
-The same original value always produces the same fake replacement.
-"""
+"""Deterministic fake value generation."""
 
 from __future__ import annotations
 import hashlib
@@ -17,16 +12,10 @@ from .config import (
     RANDOM_SEED,
 )
 
-# ---------------------------------------------------------------------------
-# Seeded Faker for Indian locale + US as fallback
-# ---------------------------------------------------------------------------
 _fake_in = Faker(["en_IN", "en_US"])
 _fake_us = Faker("en_US")
 Faker.seed(RANDOM_SEED)
 
-# ---------------------------------------------------------------------------
-# Replacement cache – ensures one original → one fake mapping
-# ---------------------------------------------------------------------------
 _cache: dict[str, str] = {}
 
 
@@ -40,10 +29,6 @@ def _seeded_fake(value: str, salt: str = "") -> random.Random:
     rng = random.Random(_seed_from_value(value, salt))
     return rng
 
-
-# ---------------------------------------------------------------------------
-# Category-specific generators
-# ---------------------------------------------------------------------------
 
 def _fake_email(original: str) -> str:
     rng = _seeded_fake(original, "email")
@@ -156,9 +141,7 @@ def _fake_pincode(original: str) -> str:
     return f"{rng.randint(100000, 999999)}"
 
 
-# ---------------------------------------------------------------------------
 # Dispatch table
-# ---------------------------------------------------------------------------
 _GENERATORS: dict[str, callable] = {
     CAT_EMAIL:   _fake_email,
     CAT_PHONE:   _fake_phone,

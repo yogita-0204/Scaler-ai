@@ -1,14 +1,7 @@
-"""
-Comprehensive Test Suite for PII Redaction Tool
-================================================
-Tests: structured detectors, contextual detectors,
-       pseudonymiser, overlap resolver, DOCX processor,
-       evaluator, and regression cases.
-
-Run with:  python -m pytest tests/ -v
-"""
+"""Tests for PII redaction package."""
 
 import pytest
+
 import sys
 import os
 from pathlib import Path
@@ -37,9 +30,9 @@ from pii_redactor.config import (
 )
 
 
-# ============================================================================
+
 # Helper
-# ============================================================================
+
 
 def found_categories(detections):
     return {d.category for d in detections}
@@ -49,9 +42,9 @@ def found_values(detections):
     return {d.value for d in detections}
 
 
-# ============================================================================
+
 # EMAIL DETECTOR
-# ============================================================================
+
 
 class TestEmailDetector:
     det = EmailDetector()
@@ -97,9 +90,9 @@ class TestEmailDetector:
         assert CAT_EMAIL in found_categories(r)
 
 
-# ============================================================================
+
 # PHONE DETECTOR
-# ============================================================================
+
 
 class TestPhoneDetector:
     det = PhoneDetector()
@@ -137,9 +130,9 @@ class TestPhoneDetector:
         assert CAT_PHONE in found_categories(r)
 
 
-# ============================================================================
+
 # IP ADDRESS DETECTOR
-# ============================================================================
+
 
 class TestIPDetector:
     det = IPAddressDetector()
@@ -165,9 +158,9 @@ class TestIPDetector:
         assert CAT_IP not in found_categories(r)
 
 
-# ============================================================================
+
 # CREDIT CARD DETECTOR
-# ============================================================================
+
 
 class TestCreditCardDetector:
     det = CreditCardDetector()
@@ -187,9 +180,9 @@ class TestCreditCardDetector:
         assert CAT_CC in found_categories(r)
 
 
-# ============================================================================
+
 # SSN DETECTOR
-# ============================================================================
+
 
 class TestSSNDetector:
     det = SSNDetector()
@@ -211,9 +204,9 @@ class TestSSNDetector:
         assert CAT_SSN not in found_categories(r)
 
 
-# ============================================================================
+
 # CIN DETECTOR
-# ============================================================================
+
 
 class TestCINDetector:
     det = CINDetector()
@@ -231,9 +224,9 @@ class TestCINDetector:
         assert CAT_CIN not in found_categories(r)
 
 
-# ============================================================================
+
 # DIN DETECTOR
-# ============================================================================
+
 
 class TestDINDetector:
     det = DINDetector()
@@ -252,9 +245,9 @@ class TestDINDetector:
         assert CAT_DIN not in found_categories(r)
 
 
-# ============================================================================
+
 # PINCODE DETECTOR
-# ============================================================================
+
 
 class TestPincodeDetector:
     det = PincodeDetector()
@@ -275,9 +268,9 @@ class TestPincodeDetector:
         assert CAT_PINCODE not in found_categories(r)
 
 
-# ============================================================================
+
 # PERSON NAME DETECTOR
-# ============================================================================
+
 
 class TestPersonNameDetector:
     det = PersonNameDetector()
@@ -317,9 +310,9 @@ class TestPersonNameDetector:
         assert not any("Website" in value for value in values)
 
 
-# ============================================================================
+
 # COMPANY NAME DETECTOR
-# ============================================================================
+
 
 class TestCompanyNameDetector:
     det = CompanyNameDetector()
@@ -350,9 +343,9 @@ class TestCompanyNameDetector:
         assert "escrow collection bank" in values
 
 
-# ============================================================================
+
 # DOB DETECTOR
-# ============================================================================
+
 
 class TestDOBDetector:
     det = DOBDetector()
@@ -394,9 +387,9 @@ class TestAddressDetector:
         assert detections
         assert detections[0].value.startswith("11/3")
 
-# ============================================================================
+
 # OVERLAP RESOLVER
-# ============================================================================
+
 
 class TestOverlapResolver:
 
@@ -447,9 +440,9 @@ class TestOverlapResolver:
         assert len(result) == 2
 
 
-# ============================================================================
+
 # PSEUDONYMISER
-# ============================================================================
+
 
 class TestPseudonymiser:
 
@@ -493,9 +486,9 @@ class TestPseudonymiser:
         assert len(r) == 8
 
 
-# ============================================================================
+
 # REGRESSION TESTS (bugs found and fixed)
-# ============================================================================
+
 
 class TestRegressions:
     """Each test locks in a fix for a specific discovered issue."""
@@ -547,9 +540,9 @@ class TestRegressions:
         assert "ipo@trilegal.com" in vals
 
 
-# ============================================================================
+
 # INTEGRATION TEST – end-to-end detection on real document text snippets
-# ============================================================================
+
 
 class TestIntegration:
 
@@ -675,3 +668,42 @@ class TestDocxRedactionIntegrity:
             from pii_redactor.docx_processor import DocxProcessor
             with pytest.raises(ValueError, match="different"):
                 DocxProcessor(str(path), str(path)).process()
+
+    def test_edge_case_empty_and_whitespace_input(self):
+        """Empty or whitespace input must return empty detections without error."""
+        from pii_redactor.docx_processor import detect_all
+        assert detect_all("") == []
+        assert detect_all("   \n\t  ") == []
+
+    def test_edge_case_mixed_case_trust_name(self):
+        """ALLCAPS trust names in headers must be detected and pseudonymised."""
+        comp_det = CompanyNameDetector()
+        r = comp_det.detect("OUR PROMOTERS: EVEREST FAMILY TRUST AND MAKALU FAMILY TRUST")
+        vals = {d.value.upper() for d in r}
+        assert "EVEREST FAMILY TRUST" in vals
+
+    def test_edge_case_company_list_conjunctions(self):
+        """Conjunctions like 'and' must not merge separate company names."""
+        comp_det = CompanyNameDetector()
+        text = "Annapurna Family Trust, Kanchenjunga Family Trust and Waterloo Industrial Park VI Private Limited"
+        dets = comp_det.detect(text)
+        vals = [d.value for d in dets]
+        assert "Annapurna Family Trust" in vals
+        assert "Kanchenjunga Family Trust" in vals
+        assert "Waterloo Industrial Park VI Private Limited" in vals
+        assert not any("and" in v.lower() for v in vals)
+
+    def test_edge_case_generic_phrases_not_detected(self):
+        """Generic phrases like 'Senior Management' must not be flagged as companies."""
+        comp_det = CompanyNameDetector()
+        text = "Our Senior Management and Key Management personnel"
+        dets = comp_det.detect(text)
+        assert not dets
+
+    def test_edge_case_pseudonymiser_case_insensitive_cache(self):
+        """Pseudonymiser should yield the same fake value regardless of casing."""
+        r1 = get_replacement(CAT_PERSON, "Sarthak Malvadkar")
+        r2 = get_replacement(CAT_PERSON, "sarthak malvadkar")
+        r3 = get_replacement(CAT_PERSON, "SARTHAK MALVADKAR")
+        assert r1 == r2 == r3
+

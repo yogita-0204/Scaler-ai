@@ -1,10 +1,4 @@
-"""
-Evaluation Module
-==================
-Builds a gold-standard test set, runs detectors against it,
-and computes TP/FP/FN/TN, Precision, Recall, Accuracy, F1
-per category and overall.
-"""
+"""Evaluation module for precision, recall, and accuracy benchmarks."""
 
 from __future__ import annotations
 import re
@@ -54,11 +48,9 @@ class CategoryMetrics:
         return (self.tp + self.tn) / total if total > 0 else 0.0
 
 
-# ---------------------------------------------------------------------------
-# Gold-standard examples – real and synthetic, positive and negative
-# ---------------------------------------------------------------------------
+# Gold-standard examples
 GOLD_SET: list[GoldExample] = [
-    # ---- EMAIL ----
+    # Email
     GoldExample("Email: cs.connect@kshinternational.com is the contact",
                 CAT_EMAIL, True, "Real doc email"),
     GoldExample("Send to ipo@trilegal.com for queries",
@@ -74,7 +66,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("test@test.c is malformed",
                 CAT_EMAIL, False, "Malformed TLD"),
 
-    # ---- PHONE ----
+    # Phone
     GoldExample("Telephone: +91 20 45053237",
                 CAT_PHONE, True, "Real doc phone"),
     GoldExample("Call +91 22 4009 4400 for support",
@@ -90,7 +82,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("12345 is a short number",
                 CAT_PHONE, False, "Too short for phone"),
 
-    # ---- IP ADDRESS ----
+    # IP Address
     GoldExample("Server at 192.168.1.1 is down",
                 CAT_IP, True, "Private IP"),
     GoldExample("Public IP: 203.0.113.42",
@@ -100,7 +92,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("256.1.2.3 is invalid",
                 CAT_IP, False, "Invalid octet"),
 
-    # ---- CREDIT CARD ----
+    # Credit Card
     GoldExample("Card: 4532015112830366",
                 CAT_CC, True, "Valid Luhn Visa number"),
     GoldExample("Card: 1234567890123456",
@@ -108,7 +100,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("Revenue of 4532015112830366 million",
                 CAT_CC, False, "Financial context – Luhn may pass but this is ambiguous"),
 
-    # ---- SSN ----
+    # SSN
     GoldExample("SSN: 123-45-6789",
                 CAT_SSN, True, "Standard SSN format"),
     GoldExample("000-45-6789 is invalid",
@@ -116,7 +108,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("Reference 123-45-6789 in the report",
                 CAT_SSN, True, "SSN in context"),
 
-    # ---- CIN ----
+    # CIN
     GoldExample("CIN: U28129PN1979PLC141032",
                 CAT_CIN, True, "Real doc CIN"),
     GoldExample("CIN: U67190MH1999PTC118368",
@@ -124,25 +116,25 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("The section is U/s 32 of the Act",
                 CAT_CIN, False, "Not a CIN"),
 
-    # ---- PAN ----
+    # PAN
     GoldExample("PAN: AABCK1234D is registered",
                 CAT_PAN, True, "Synthetic PAN near label"),
     GoldExample("TOTAL shares offered",
                  CAT_PAN, False, "All-caps word, not PAN"),
 
-    # ---- DIN ----
+    # DIN
     GoldExample("Director DIN: 01234567",
                  CAT_DIN, True, "Director identification number"),
     GoldExample("Reference number 12345678",
                  CAT_DIN, False, "Unlabelled number, not DIN"),
 
-    # ---- PINCODE ----
+    # Pincode
     GoldExample("Registered address: Pune 410501, Maharashtra",
                  CAT_PINCODE, True, "Indian postal code in address"),
     GoldExample("Offer size: 410501 shares",
                  CAT_PINCODE, False, "Standalone number, not pincode"),
 
-    # ---- DOB ----
+    # DOB
     GoldExample("Date of birth: 15/08/1985",
                 CAT_DOB, True, "DOB with label"),
     GoldExample("DOB: January 10, 1990",
@@ -152,7 +144,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("Dated December 10, 2025",
                 CAT_DOB, False, "Document date, not DOB"),
 
-    # ---- PERSON ----
+    # Person
     GoldExample("Contact Person: Sarthak Malvadkar Company Secretary",
                 CAT_PERSON, True, "Real doc contact person"),
     GoldExample("KUSHAL SUBBAYYA HEGDE is a promoter",
@@ -160,7 +152,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("The offer is for QIBs and RIIs",
                 CAT_PERSON, False, "Abbreviations, not names"),
 
-    # ---- COMPANY ----
+    # Company
     GoldExample("Lead Manager: Nuvama Wealth Management Limited",
                 CAT_COMPANY, True, "Real doc company"),
     GoldExample("Registered with HDFC Bank Limited",
@@ -168,7 +160,7 @@ GOLD_SET: list[GoldExample] = [
     GoldExample("under the Companies Act 2013",
                 CAT_COMPANY, False, "Act reference, not a specific company"),
 
-    # ---- ADDRESS ----
+    # Address
     GoldExample(
         "Registered Office: 11/3, 11/4 and 11/5 Village Birdewadi "
         "Chakan Taluka - Khed, Pune – 410 501, Maharashtra, India",
@@ -177,10 +169,6 @@ GOLD_SET: list[GoldExample] = [
                 CAT_ADDRESS, False, "Page reference, not address"),
 ]
 
-
-# ---------------------------------------------------------------------------
-# Evaluator
-# ---------------------------------------------------------------------------
 
 def _detect_category(text: str, category: str) -> bool:
     """Run all detectors on text; return True if `category` is detected."""
